@@ -174,24 +174,19 @@
     </style>
 
 <!--<script type="text/javascript" src="/static/lib/activation.js"></script>-->
-<script type="text/javascript">
-    // IE doesn't seem to support keys
-    if(!Object.keys) Object.keys = function(o){
-        if (o !== Object(o)) throw new TypeError('Object.keys called on non-object');
-        var ret=[],p;
-        for(p in o) if(Object.prototype.hasOwnProperty.call(o,p)) ret.push(p);
-        return ret;
+<script>
+    // const API_ENDPOINT = "https://www.ncnr.nist.gov/cgi-bin/nact.py"
+    const API_ENDPOINT = "/cgi-bin/nact.py";
+    
+    const ELEMENTS = {"n": 0, "H": 1, "He": 2, "Li": 3, "Be": 4, "B": 5, "C": 6, "N": 7, "O": 8, "F": 9, "Ne": 10, "Na": 11, "Mg": 12, "Al": 13, "Si": 14, "P": 15, "S": 16, "Cl": 17, "Ar": 18, "K": 19, "Ca": 20, "Sc": 21, "Ti": 22, "V": 23, "Cr": 24, "Mn": 25, "Fe": 26, "Co": 27, "Ni": 28, "Cu": 29, "Zn": 30, "Ga": 31, "Ge": 32, "As": 33, "Se": 34, "Br": 35, "Kr": 36, "Rb": 37, "Sr": 38, "Y": 39, "Zr": 40, "Nb": 41, "Mo": 42, "Tc": 43, "Ru": 44, "Rh": 45, "Pd": 46, "Ag": 47, "Cd": 48, "In": 49, "Sn": 50, "Sb": 51, "Te": 52, "I": 53, "Xe": 54, "Cs": 55, "Ba": 56, "La": 57, "Ce": 58, "Pr": 59, "Nd": 60, "Pm": 61, "Sm": 62, "Eu": 63, "Gd": 64, "Tb": 65, "Dy": 66, "Ho": 67, "Er": 68, "Tm": 69, "Yb": 70, "Lu": 71, "Hf": 72, "Ta": 73, "W": 74, "Re": 75, "Os": 76, "Ir": 77, "Pt": 78, "Au": 79, "Hg": 80, "Tl": 81, "Pb": 82, "Bi": 83, "Po": 84, "At": 85, "Rn": 86, "Fr": 87, "Ra": 88, "Ac": 89, "Th": 90, "Pa": 91, "U": 92, "Np": 93, "Pu": 94, "Am": 95, "Cm": 96, "Bk": 97, "Cf": 98, "Es": 99, "Fm": 100, "Md": 101, "No": 102, "Lr": 103, "Rf": 104, "Db": 105, "Sg": 106, "Bh": 107, "Hs": 108, "Mt": 109, "Ds": 110, "Rg": 111, "Cn": 112, "Nh": 113, "Fl": 114, "Mc": 115, "Lv": 116, "Ts": 117, "Og": 118};
+    let ACTIVE_BUTTON = "activation";
+
+    function getURLParameter(paramName, default_value=null) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.has(paramName) ? urlParams.get(paramName) : default_value;
     }
 
-    ELEMENTS = {"n": 0, "H": 1, "He": 2, "Li": 3, "Be": 4, "B": 5, "C": 6, "N": 7, "O": 8, "F": 9, "Ne": 10, "Na": 11, "Mg": 12, "Al": 13, "Si": 14, "P": 15, "S": 16, "Cl": 17, "Ar": 18, "K": 19, "Ca": 20, "Sc": 21, "Ti": 22, "V": 23, "Cr": 24, "Mn": 25, "Fe": 26, "Co": 27, "Ni": 28, "Cu": 29, "Zn": 30, "Ga": 31, "Ge": 32, "As": 33, "Se": 34, "Br": 35, "Kr": 36, "Rb": 37, "Sr": 38, "Y": 39, "Zr": 40, "Nb": 41, "Mo": 42, "Tc": 43, "Ru": 44, "Rh": 45, "Pd": 46, "Ag": 47, "Cd": 48, "In": 49, "Sn": 50, "Sb": 51, "Te": 52, "I": 53, "Xe": 54, "Cs": 55, "Ba": 56, "La": 57, "Ce": 58, "Pr": 59, "Nd": 60, "Pm": 61, "Sm": 62, "Eu": 63, "Gd": 64, "Tb": 65, "Dy": 66, "Ho": 67, "Er": 68, "Tm": 69, "Yb": 70, "Lu": 71, "Hf": 72, "Ta": 73, "W": 74, "Re": 75, "Os": 76, "Ir": 77, "Pt": 78, "Au": 79, "Hg": 80, "Tl": 81, "Pb": 82, "Bi": 83, "Po": 84, "At": 85, "Rn": 86, "Fr": 87, "Ra": 88, "Ac": 89, "Th": 90, "Pa": 91, "U": 92, "Np": 93, "Pu": 94, "Am": 95, "Cm": 96, "Bk": 97, "Cf": 98, "Es": 99, "Fm": 100, "Md": 101, "No": 102, "Lr": 103, "Rf": 104, "Db": 105, "Sg": 106, "Bh": 107, "Hs": 108, "Mt": 109, "Ds": 110, "Rg": 111, "Cn": 112, "Nh": 113, "Fl": 114, "Mc": 115, "Lv": 116, "Ts": 117, "Og": 118};
-    ACTIVE_BUTTON = "activation";
-    // Parse environment variables "index.html?cutoff=...&abundance=..."
-    function getURLParameter(name) {
-        var value = decodeURIComponent(
-            (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]
-            );
-        return value;
-    }
+    const { CUTOFF, CUTOFF_Bq, DECAY_LEVEL, ABUNDANCE } = parse_url_parameters();
     // From Doron Grinzaig (2017-11-21)
     // https://stackoverflow.com/questions/14129953/how-to-encode-a-string-in-javascript-for-displaying-in-html
     function sanitize(html) {
@@ -250,98 +245,103 @@
     });
 
     function parse_url_parameters() {
-        // Parse URL parameters.
-        var cutoff_par = getURLParameter('cutoff');
-        if (cutoff_par==='null') CUTOFF = 0.0005;
-        else CUTOFF = Number(cutoff_par);
-        if (isNaN(CUTOFF)) { // IE doesn't support Number.isNaN
-            show_error("<p>cutoff="+sanitize(cutoff_par)+" in URL should be floating point μCi; default is 0.0005.</p>");
-            CUTOFF = 0.0005;
+        // Parse URL parameters...
+        const DEFAULT_CUTOFF = 0.0005;
+        const cutoff_par = Number(getURLParameter("cutoff", DEFAULT_CUTOFF));
+        const CUTOFF = isNaN(cutoff_par) ? DEFAULT_CUTOFF : cutoff_par;
+        if (isNaN(cutoff_par)) {
+            show_error(`cutoff=${cutoff_par} in URL should be floating point μCi; default is ${DEFAULT_CUTOFF}`);
         }
-        CUTOFF_Bq = CUTOFF*37000;
+        const CUTOFF_Bq = CUTOFF*37000;
 
-        var decay_par = getURLParameter('decay');
-        if (decay_par==='null') DECAY_LEVEL = CUTOFF>0?CUTOFF:0.0005;
-        else DECAY_LEVEL = Number(decay_par)
-        if (isNaN(DECAY_LEVEL)) { // IE doesn't support Number.isNaN
-            show_error("<p>decay="+sanitize(decay_par)+" in URL should be floating point μCi; default is cutoff.</p>");
-            DECAY_LEVEL = CUTOFF>0?CUTOFF:0.0005;
+        const DEFAULT_DECAY = (CUTOFF > 0) ? CUTOFF : 0.0005;
+        const decay_par = Number(getURLParameter("decay", DEFAULT_DECAY));
+        const DECAY_LEVEL = isNaN(decay_par) ? DEFAULT_DECAY : decay_par;
+        if (isNaN(decay_par)) {
+            show_error(`decay=${decay_par} in URL should be floating point μCi; default is cutoff.`);
         }
 
-        var abundance_par = getURLParameter('abundance');
-        if (abundance_par==='null') ABUNDANCE = "IAEA";
-        // CRUFT: periodictable no longer uses NIST 2001 data for abundance
-        else if (abundance_par==='NIST') ABUNDANCE = "IUPAC";
-        else ABUNDANCE = abundance_par;
-        if (ABUNDANCE!=="IUPAC" && ABUNDANCE!=="IAEA") {
-            show_error("<p>abundance="+sanitize(abundance_par)+" in URL should be IUPAC or IAEA; default is IAEA</p>");
-            ABUNDANCE = "IAEA";
+        const abundance_par = getURLParameter("abundance", "IAEA");
+        const ABUNDANCE_ALLOWED_VALUES = new Map([
+            ["NIST", "IUPAC"],
+            ["IUPAC","IUPAC"],
+            ["IAEA", "IAEA"]
+        ]);
+        const ABUNDANCE = ABUNDANCE_ALLOWED_VALUES.get(abundance_par) ?? "IAEA";
+        if (!(ABUNDANCE_ALLOWED_VALUES.has(abundance_par))) {
+            show_error(`abundance=${abundance_par} in URL should be IUPAC or IAEA; default is IAEA`);
         }
+
+        return { CUTOFF, CUTOFF_Bq, DECAY_LEVEL, ABUNDANCE }
     }
 
     function enable_forms() {
         // Enable forms; they are disabled by default so that noscript users
         // can't do anything.
-        $('.container').removeClass("disabled");
-        $('#id_chemical_formula').removeAttr("disabled");
-        $('#id_submit_scat').removeAttr("disabled");
-        $('#id_submit_act').removeAttr("disabled");
-        $('a').each(function(){ this.tabIndex = -1; });
-        $('.help').each(function(){ $(this).append("<hr>"); });
-        $('input[type=text]').keydown(function(e) {
-            if (e.keyCode == 13) {
-                e.preventDefault();
-                submit_query(ACTIVE_BUTTON);
-            }
+        document.querySelector('.container').classList.remove("disabled");
+        document.querySelector('#id_chemical_formula').disabled = false;
+        document.querySelector('#id_submit_scat').disabled = false;
+        document.querySelector('#id_submit_act').disabled = false;
+        document.querySelectorAll('a').forEach((el) => { el.tabIndex = -1 });
+        document.querySelectorAll('.help').forEach((el) => { el.appendChild(document.createElement('hr')) });
+        document.querySelectorAll('input[type=text]').forEach((el) => {
+            el.addEventListener("keydown", (event) => {
+                if (event.key == "Enter") {
+                    event.preventDefault();
+                    submit_query(ACTIVE_BUTTON);
+                }
+            });
+            el.addEventListener("focus", (event) => {
+                const panel = el.closest('.panel').id;
+                if (panel == "scattering-panel") {
+                    ACTIVE_BUTTON = "scattering";
+                } else if (panel == "activation-panel") {
+                    ACTIVE_BUTTON = "activation";
+                }
+            });
         });
-        $('input[type=text]').focus(function(e) {
-            var panel = $(this).closest('.panel')[0].id;
-            if (panel == "scattering-panel") {
-                ACTIVE_BUTTON = "scattering";
-            } else if (panel == "activation-panel") {
-                ACTIVE_BUTTON = "activation";
-            }
-        } );
 
         //$("#id-activationForm").submit(submit_query);
-        $("#id-activationForm").submit(function(event) {event.preventDefault();});
-        $('#id_submit_scat').click(function() { submit_query('scattering'); });
-        $('#id_submit_act').click(function() { submit_query('activation'); });
-    }
-
-    function submit_query(target){
-        ACTIVE_BUTTON = target;
-        $.ajax({
-            type:"POST",
-            url:"/cgi-bin/nact.py",
-            data: {
-                calculate: target,
-                sample: $('input:text[id=id_chemical_formula]').val(),
-                flux: $('input:text[id=id_flux]').val(),
-                fast: $('input:text[id=id_fast_ratio]').val(),
-                Cd: $('input:text[id=id_Cd_ratio]').val(),
-                mass: $('input:text[id=id_mass]').val(),
-                density: $('input:text[id=id_density]').val(),
-                thickness: $('input:text[id=id_thickness]').val(),
-                wavelength: $('input:text[id=id_wavelength]').val(),
-                xray: $('input:text[id=id_xray]').val(),
-                exposure: $('input:text[id=id_time_on]').val(),
-                rest: [0,1,24,360,$('input:text[id=id_time_off]').val()],
-                decay: DECAY_LEVEL,
-                //abundance: $('input:text[id=id_abundance]').val()
-                abundance: ABUNDANCE
-            },
-            complete: function (xhr, status) {
-                //console.log(status);
-                if (status==="parsererror") {
-                    process_response({'success':false,'detail':{'JSON response':'parse error in return value---maybe NaN or Inf?'}});
-                }  else if (status!=="success") {
-                    process_response({'success':false,'detail':{'status error':status}});
-                }
-            },
-            //error: function (xhr, status, err) { console.log("error",error); },
-            success: process_response
+        document.getElementById("id-activationForm").addEventListener("submit", (event) => {
+            event.preventDefault();
+            return false;
         });
+        document.getElementById("id_submit_scat").addEventListener("click", (event) => {
+            submit_query("scattering");
+        });
+        document.getElementById("id_submit_act").addEventListener("click", (event) => {
+            submit_query("activation");
+        });
+    }
+    
+    async function submit_query(target){
+        ACTIVE_BUTTON = target;
+        const formData = new FormData(document.getElementById("id-activationForm"));
+        formData.set("decay", DECAY_LEVEL);
+        formData.set("abundance", ABUNDANCE);
+        formData.set("calculate", target);
+        const rest = formData.get("rest");
+        formData.delete("rest");
+        for (let rest_val of [0,1,24,360,rest]) {
+            formData.append("rest[]", rest_val);
+        }
+
+        const result = await fetch(API_ENDPOINT, {
+            method: "POST",
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: (new URLSearchParams(formData)).toString()
+        });
+
+        if (!result.ok) {
+            process_response({'success':false,'detail':{'status error': result.status}});
+        }
+        try {
+            const json_result = await result.json();
+            console.log(json_result);
+            process_response(json_result);
+        } catch (e) {
+            process_response({'success':false,'detail':{'JSON response':'parse error in return value---maybe NaN or Inf?'}});
+        }
     }
 
     function cssrule(class_name){
@@ -436,23 +436,25 @@
         content += ' </tfoot> \n</table>\n';
         return content;
     }
-    function show_error(error_html) {
-        var content = '<div class="result error"><hr />\n';
-        content += error_html;
-        content += '</div>\n';
-        $(content).prependTo('div[id=results]');
+    function show_error(error_string) {
+        const content_div = document.createElement("div");
+        content_div.classList.add("result", "error");
+        content_div.textContent = error_string;
+        const results = document.getElementById("results");
+        if (results) {
+            results.prepend(content_div);
+        }
     }
     function process_response(ldata) {
         //console.log(ldata);
-        if (typeof(ldata)==="string") ldata=$.parseJSON(ldata);
+        if (typeof(ldata)==="string") ldata=JSON.parse(ldata);
         if (!ldata.success) {
             var error_html = '';
             var keys = Object.keys(ldata.detail);
             keys.sort();
-            for (i = keys.length-1; i >= 0; i--) {
-                error_html += '<pre class="error">Error ' +sanitize(keys[i])+': '+sanitize(ldata.detail[keys[i]])+'</pre>\n';
+            for (let key of keys) {
+                show_error(`Error ${key}: ${ldata.detail[key]}`);
             }
-            show_error(error_html);
             return;
         }
 
@@ -652,7 +654,7 @@
             <table><tbody>
             <tr>
               <td>
-               <div class="controls"><input id="id_chemical_formula" type="text" class="textinput textInput" name="chemical_formula" value="Co" title="chemical formula for the material or mixture" ></div>
+               <div class="controls"><input id="id_chemical_formula" type="text" class="textinput textInput" name="sample" value="Co" title="chemical formula for the material or mixture" ></div>
               </td>
             </tr></tbody></table>
             </div>
@@ -681,10 +683,10 @@
                <div class="controls"><input id="id_flux" type="text" class="textinput textInput" name="flux" value="1e8" title="Thermal beam flux at sample"> </div>
               </td>
               <td>
-               <div class="controls"><input id="id_Cd_ratio" type="text" class="textinput textInput" name="Cd_ratio" value="0" title="Cd ratio, or 0 if no epithermal neutrons."> </div>
+               <div class="controls"><input id="id_Cd_ratio" type="text" class="textinput textInput" name="Cd" value="0" title="Cd ratio, or 0 if no epithermal neutrons."> </div>
               </td>
               <td>
-               <div class="controls"><input id="id_fast_ratio" type="text" class="textinput textInput" name="fast_ratio" value="0" title="Thermal/fast neutron ratio, or 0 if no fast neutrons."> </div>
+               <div class="controls"><input id="id_fast_ratio" type="text" class="textinput textInput" name="fast" value="0" title="Thermal/fast neutron ratio, or 0 if no fast neutrons."> </div>
               </td>
             </tr>
 
@@ -703,9 +705,9 @@
               <td>
                <div class="controls"><input id="id_mass" type="text" class="textinput textInput" name="mass" value="" title="Sample mass.  Activation scales linearly with mass."></div>
               </td><td>
-               <div class="controls"><input id="id_time_on" type="text" class="textinput textInput" name="time_on" value="10" title="Sample exposure time in hours, minutes, seconds, days, weeks or years."> </div>
+               <div class="controls"><input id="id_time_on" type="text" class="textinput textInput" name="exposure" value="10" title="Sample exposure time in hours, minutes, seconds, days, weeks or years."> </div>
               </td><td>
-               <div class="controls"><input id="id_time_off" type="text" class="textinput textInput" name="time_off" value="1 y" title="Time since sample was removed from the beam.  0, 1 hour, 1 day and 15 days are automatically calculated"> </div>
+               <div class="controls"><input id="id_time_off" type="text" class="textinput textInput" name="rest" value="1 y" title="Time since sample was removed from the beam.  0, 1 hour, 1 day and 15 days are automatically calculated"> </div>
               </td>
             </tr></tbody></table>
             <input type="submit" name="submit_act" value="Calculate" class="btn btn-primary" id="id_submit_act">
@@ -1349,7 +1351,7 @@ Neutron activation: NCNR Health Physics &lt;<a href="mailto:hp@nist.gov">hp@nist
 Scattering calculations: Paul Kienzle &lt;<a href="mailto:paul.kienzle@nist.gov">paul.kienzle@nist.gov</a>&gt;
 </p></div>
   <div style="float:right;">
-    <p><?php lastmod(); ?><br>Using <a href="https://periodictable.readthedocs.io">periodictable v2.0.0<a></p>
+    <p>Using <a href="https://periodictable.readthedocs.io">periodictable v2.0.0<a></p>
   </div>
 </div>
 
