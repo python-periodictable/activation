@@ -9,9 +9,14 @@
     <script type="text/javascript" src="jquery.tablesorter-2.0.5b.min.js"></script>
 
     <style type="text/css">
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
         @media print
         {
-            body { font-size: 10pt !important; }
+            html, body { font-size: 10pt !important; height: unset; }
             table, caption, th, td {
                 font-size: 10pt !important;
                 /* border: 0.1pt solid lightgray !important; */
@@ -26,7 +31,6 @@
         .print-only *{ display: none; }
 
         p { margin-bottom: 0; }
-        .footer p { margin-top: 0; }
         /* body { font-size: 0.9em; } */
         .disabled { opacity: 0.3; }
         label { font-weight: inherit; }
@@ -62,34 +66,48 @@
         div.nocutoff { display: none; }
         button.activity_button { float: right; }
 
+        #wrapper {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
 
-        /* IE requires the -ms- vendor tag for grid attributes. */
         /* frame layout */
         #content-frame {
-            display:-ms-grid;
-            display:grid;
+            display: flex;
+            flex-direction: row;
+            width: 100%;
         }
+
         #activation-frame {
-            -ms-grid-column:1; -ms-grid-row:1;
-            grid-column:1; grid-row:1;
             width:30em;
-            }
+        }
+
         #help-frame {
-            -ms-grid-column:2; -ms-grid-row:1;
-            grid-column:2; grid-row:1;
-            overflow:hidden;
-            margin-right:0em;
+            position: relative;
+            flex: 1;
             /* min-width:10em; max-width:40em; */
-            padding-right:0.5em;
             overflow-y:scroll;
-            height:35ex; /* will be replaced by activation-frame height in js */
         }
+
+        #help-wrapper {
+            position: absolute;
+            padding-left:1em;
+            padding-right: 1em;
+            margin-right:0em;
+        }
+
+        #help-wrapper .word-break {
+            word-break: break-all;
+        }
+
         #results-frame {
-            -ms-grid-column:1/3; -ms-grid-row:2;
-            grid-column:1/3; grid-row:2;
-            height:auto;
-            overflow-y:scroll;
+            overflow: auto;
+            flex: 1;
+            border-top:#005ea2 1px solid;
+            border-bottom:#005ea2 1px solid;
         }
+
         div.control-group { margin-left: 0.5em; vertical-align: bottom; }
         /* div.control-group { height: 3ex; width: 15em; } */
         /* .help starts display:none so that size is initially zero. */
@@ -172,6 +190,79 @@
         sup { bottom: 1ex; }
         sub { top: .5ex; }
     </style>
+
+<style type="text/css">
+    @font-face {
+        font-family:"Source Sans Pro Web";
+        font-style:normal;
+        font-weight:400;
+        font-display:fallback;
+        src: url(https://www.nist.gov/libraries/nist-component-library/dist/fonts/source-sans-pro/sourcesanspro-bold-webfont.woff2) format("woff2"),
+                url(/libraries/nist-component-library/dist/fonts/source-sans-pro/sourcesanspro-regular-webfont.woff) format("woff"),
+                url(/libraries/nist-component-library/dist/fonts/source-sans-pro/sourcesanspro-regular-webfont.ttf) format("truetype");
+    }
+
+    .ncnr-nist-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background-color: #f5f5f5;
+        border-bottom: 1px solid #ddd;
+        background: url(https://www.nist.gov/libraries/nist-component-library/dist/img/pattern/bg_pattern.png) #006dbc;
+        position: relative;
+    }
+
+    .ncnr-nist-header::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background-image: linear-gradient(to right,transparent,#005ea2);
+    }
+
+    .ncnr-nist-header h2 {
+        margin: 0;
+        font-family: Source Sans Pro Web;
+        font-size: 1.86rem;
+        line-height: 1.1;
+        text-decoration: none;
+        padding-left: 7rem;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
+    .ncnr-nist-header a {
+        text-decoration: none;
+        color: #FFF;
+        z-index: 2;
+        position: relative;
+    }
+
+    .ncnr-nist-header img {
+        position: relative;
+        padding-right: 2rem;
+        max-width: 100px;
+        height: auto;
+        z-index: 2;
+    }
+</style>
+
+<style>
+    .footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem;
+    }
+
+    .footer .contacts {
+        flex: 1;
+    }
+
+</style>
 
 <!--<script type="text/javascript" src="/static/lib/activation.js"></script>-->
 <script type="text/javascript">
@@ -614,7 +705,7 @@
     }
 
     function setup_help() {
-        $('#help-frame').height($('#activation-frame').height());
+        // $('#help-frame').height($('#activation-frame').height());
         $('input').focusin(function(){help_jump("help_"+this.id.slice(3))});
         $('.cite').click(function(event){
             event.preventDefault();
@@ -632,14 +723,20 @@
 </head>
 <body>
 
-<?php
-  include("/var/www/include/navigation.inc");
-  include("/var/www/include/utility.inc");
-?>
-
 <noscript>
 <h3>Enable javascript to run the activation calculator.</h3><hr />
 </noscript>
+
+<div id="wrapper" class="container">
+
+<header class="ncnr-nist-header">
+    <a href="https://www.nist.gov/ncnr">
+        <h2>NIST Center for Neutron Research</h2>
+    </a>
+    <a href="https://www.nist.gov">
+        <img src="https://www.nist.gov/libraries/nist-component-library/dist/img/logo/logo.svg" alt="National Institute of Standards and Technology" width="300px" height="80px">
+    </a>
+</header>
 
 <div id="content-frame" class="container disabled">
 
@@ -752,6 +849,7 @@
 
     </div>
     <div id="help-frame" class="no-print">
+        <div id="help-wrapper">
 <div id="help_initial" class="help">
 <h3>Neutron activation and scattering calculator</h3>
 <p>
@@ -897,7 +995,7 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
     DNA sequences, or "rna" for RNA sequences.  Density is estimated automatically.
     This calculation uses <sup>1</sup>H for labile hydrogen, with substitution
     by H in natural abundance and pure D when computing contrast match point.
-    <div class="example">&beta;-casein amino acid sequence <div class="entrytext">aa:RELEELNVPGEIVESLSSSEESITRINKKIEKFQSEEQQQTEDELQDKIHPFAQTQSLVYPFPGPIPNSLPQNIPPLTQTPVVVPPFLQPEVMGVSKVKEAMAPKHKEMPFPKYPVEPFTESQSLTLTDVENLHLPLPLLQSWMHQPHQPLPPTVMFPPQSVLSLSQSKVLPVPQKAVPYPQRDMPIQAFLLYQEPVLGPVRGPFPIIV</div></div>
+    <div class="example">&beta;-casein amino acid sequence <div class="entrytext word-break">aa:RELEELNVPGEIVESLSSSEESITRINKKIEKFQSEEQQQTEDELQDKIHPFAQTQSLVYPFPGPIPNSLPQNIPPLTQTPVVVPPFLQPEVMGVSKVKEAMAPKHKEMPFPKYPVEPFTESQSLTLTDVENLHLPLPLLQSWMHQPHQPLPPTVMFPPQSVLSLSQSKVLPVPQKAVPYPQRDMPIQAFLLYQEPVLGPVRGPFPIIV</div></div>
 </dd>
 </div>
 
@@ -1334,23 +1432,26 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
 <!-- end of help -->
 
     </div>
-
-    <div id="results-frame">
-        <h3 class="print-only">Activation and Scattering Results</h3>
-        <div id="results"></div>
-    </div>
 </div>
 
-<hr>
-<div class="footer">
-  <div style="float:left;"><p>
-<em>Questions?</em><br>
-Neutron activation: NCNR Health Physics &lt;<a href="mailto:hp@nist.gov">hp@nist.gov</a>&gt;<br>
-Scattering calculations: Paul Kienzle &lt;<a href="mailto:paul.kienzle@nist.gov">paul.kienzle@nist.gov</a>&gt;
-</p></div>
-  <div style="float:right;">
-    <p><?php lastmod(); ?><br>Using <a href="https://periodictable.readthedocs.io">periodictable v2.0.0<a></p>
+</div>
+<div id="results-frame">
+    <h3 class="print-only">Activation and Scattering Results</h3>
+    <div id="results"></div>
+</div>
+
+<footer class="footer">
+  <div class="contacts">
+    <div><em>Questions?</em></div>
+    <div>Neutron activation: NCNR Health Physics &lt;<a href="mailto:hp@nist.gov">hp@nist.gov</a>&gt;</div>
+    <div>Scattering calculations: Paul Kienzle &lt;<a href="mailto:paul.kienzle@nist.gov">paul.kienzle@nist.gov</a>&gt;</div>
   </div>
+  <div class="version">
+    Using <a href="https://periodictable.readthedocs.io">periodictable v2.0.0<a>
+  </div>
+</footer>
+
+<!-- end of wrapper -->
 </div>
 
 </body></html>
