@@ -691,6 +691,12 @@
         // do in the activation table. Note that there is no way to get back
         // the original order.
         $("table").tablesorter();
+        scroll_to_result();
+    }
+
+    function scroll_to_result(){
+        var opt = {behavior: "smooth", block: "nearest"};
+        document.getElementById("results").firstChild.scrollIntoView(opt);
     }
 
     // Dynamic help support.  Clicking an input field jumps to the
