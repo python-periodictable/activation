@@ -9,6 +9,47 @@ available on [github](https://github.com/pkienzle/periodictable).
 
 [Live version](https://www.ncnr.nist.gov/resources/activation/)
 
+
+Installation
+============
+
+The activation web frontend is in the activation subdirectory and the cgi
+backend is in cgi-bin. Update the server with something like:
+
+    sudo cp -rp activation/* /var/www/resources/activation
+    sudo cp -p cgi-bin/nact.py /var/www/cgi-bin
+
+The web page uses the date of activate/index.html to show the last
+modification date on the program, so be sure to preserve attributes in copy.
+
+Be sure the web server is configured to use python 3, with the periodictable
+package updated to the latest version:
+
+    sudo pip3 install periodictable --upgrade
+
+Be sure that changes to the periodictable backend are noted at the end of the
+help section in index.html in the repository. As well as informing users
+of updates this will also set the last modification date on index.html.
+
+For testing you can run the server from the repository:
+
+    python server.py [host | host:port]
+
+Additional files:
+
+* endf/* was used to generate the graphs of thermal resonances. It is not
+  needed unless you wish to update the graphs, for example, when new versions of
+  the endf database are released.
+
+* server.py is used to run a test server for debugging the web application, or
+  showing potential new features to users. See the help inside the file for
+  details on running the server.
+
+* cgi-bin/massfrac.py computes mass fractions for the elements in a compound. It
+  is not yet used by the web frontend.
+
+* cgi-bin/hello.py is a minimal test script for python cgi.
+
 Backend interface
 =================
 
