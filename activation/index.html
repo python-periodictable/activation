@@ -11,7 +11,7 @@
     <title>Neutron Activation and Scattering Calculator</title>
     <link rel="shortcut icon" href="favicon.ico">
 
-    <script type="text/javascript" src="jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="jquery-3.7.1.min.js"></script>
     <script type="text/javascript" src="jquery.tablesorter-2.0.5b.min.js"></script>
 
     <style type="text/css">
@@ -79,6 +79,8 @@
         /* output markup */
         .error { color: red; }
         p.disclaimer { color: darkred; font-size:1.2em; }
+        .activity_unusual { background-color:wheat; }
+        /* .activity_normal { background-color: lightred; } */
 
         /* Make the formula box expand to the available width. */
         #material-panel table { display: table; width: 100%; }
@@ -300,9 +302,11 @@
 
         var abundance_par = getURLParameter('abundance');
         if (abundance_par==='null') ABUNDANCE = "IAEA";
+        // CRUFT: periodictable no longer uses NIST 2001 data for abundance
+        else if (abundance_par==='NIST') ABUNDANCE = "IUPAC";
         else ABUNDANCE = abundance_par;
-        if (ABUNDANCE!=="NIST" && ABUNDANCE!=="IAEA") {
-            show_error("<p>abundance="+sanitize(abundance_par)+" in URL should be NIST or IAEA; default is IAEA</p>");
+        if (ABUNDANCE!=="IUPAC" && ABUNDANCE!=="IAEA") {
+            show_error("<p>abundance="+sanitize(abundance_par)+" in URL should be IUPAC or IAEA; default is IAEA</p>");
             ABUNDANCE = "IAEA";
         }
     }
@@ -429,8 +433,21 @@
             content += '<th class="headerSortable {sorter: \'' + data.sorters[i] + '\')">' + data.headers[i] + '</th>';
         }
         content += '</tr>\n </thead>\n <tbody>\n'
+        var some_unusual = false;
         for (var i in data.rows) {
-            content += '  <tr id="' + i + '">';
+            var row_style = '';
+            if (data.rows[i][1] === 'b') {
+                some_unusual = true;
+                row_style = 'activity_unusual';
+            } else if (data.rows[i][2].slice(-1) === 't') {
+                some_unusual = true;
+                row_style = 'activity_unusual';
+            //} else if (data.rows[i][2].slice(-1) === 's') {
+            //    row_style = 'activity_normal';
+            } else {
+                row_style = 'activity_normal';
+            }
+            content += `  <tr id="${i}" class="${row_style}">`;
             for (var j=0; j <data.rows[i].length; j++){
                 if (j>=4) {
                     content += '<td>'+format_activation_value(data.rows[i][j], cutoff)+'</td>';
@@ -444,7 +461,11 @@
         for (var j=0; j < act.total.length; j++) {
             content += '<td>'+format_activation_value(act.total[j], cutoff)+'</td>';
         }
-        content += '</tr>\n </tfoot>\n </table>\n';
+        content += '</tr>\n';
+        if (some_unusual) {
+            content += ' <tr class="activity_unusual"><td colspan="9">b reaction activity is slightly underestimated; it does not include decay of transients after removal from beam.</td></tr>\n';
+        }
+        content += ' </tfoot> \n</table>\n';
         return content;
     }
     function show_error(error_html) {
@@ -486,7 +507,9 @@
             content += '<p class="disclaimer">Estimated activation only. All samples must be evaluated by NIST Health Physics to determine if and how the sample can be removed from the NCNR.</p>';
 
             // Atoms
-            content += '<p>Sample in beam: ' + format_mass(sample.mass) + ' of ' + sanitize(sample.formula) + '\n';
+            //var formula = sample.formula;
+            var formula = sanitize(sample.formula_latex).replace(/\$_{([^}]*)}\$/g, '<sub>$1</sub>');
+            content += '<p>Sample in beam: ' + format_mass(sample.mass) + ' of ' + formula + '\n';
 
             // Rabbit parameters
             if (act.Cd > 0 || act.fast > 0) {
@@ -565,7 +588,9 @@
                 + xscat.xray.wavelength.toFixed(3) + "&thinsp;&Aring;"
                 + " = " + xscat.xray.energy.toFixed(3) + "&thinsp;keV<br>";
             // Atoms
-            content += "Sample in beam: " + sanitize(sample.formula) + " at " + sample.density.toFixed(2) + "&thinsp;g/cm<sup>3</sup>";
+            //var formula = sample.formula;
+            var formula = sanitize(sample.formula_latex).replace(/\$_{([^}]*)}\$/g, '<sub>$1</sub>');
+            content += "Sample in beam: " + formula + " at " + sample.density.toFixed(2) + "&thinsp;g/cm<sup>3</sup>";
             if (density_str.indexOf(':') !== -1) content += " from lattice "+sanitize(density_str);
             content += "</p>";
 
@@ -627,7 +652,10 @@
         content += '</div>\n';
 
         $(content).prependTo('div[id=results]'); //add to the dom
-        $("table").tablesorter({sortList: [[8,1]]});
+        // Start table unsorted so that b reactions follow transients as they
+        // do in the activation table. Note that there is no way to get back
+        // the original order.
+        $("table").tablesorter();
         scroll_to_result();
     }
 
@@ -831,9 +859,9 @@ ENDCOMMENT -->
             </div>
 <!--
             <div id="div_id_abundance" class="control-group">
-               <label for="id_abundance" class="control-label requiredField">Abundance (IAEA or NIST)</label>
-               <div class="controls"><input id="id_abundance" type="text" class="textinput textInput" name="abundance" value="NIST"
-                    title="Isotopic abundance for activation calculation uses either IAEA Report 273: Handbook of Nuclear Activation Data, 1987, or NIST Isotopic Composition of the Elements, 2001; sld and absorption calculations use NIST abundance."
+               <label for="id_abundance" class="control-label requiredField">Abundance (IAEA or IUPAC)</label>
+               <div class="controls"><input id="id_abundance" type="text" class="textinput textInput" name="abundance" value="IUPAC"
+                    title="Isotopic abundance for activation calculation uses either IAEA Report 273: Handbook of Nuclear Activation Data, 1987, or IUPAC 2021 values; sld and absorption calculations use IUPAC 2021 abundance."
                /> </div>
             </div>
 -->
@@ -845,9 +873,9 @@ ENDCOMMENT -->
 <h3>Neutron activation and scattering calculator</h3>
 <p>
 This calculator uses neutron cross sections to compute activation
-on the sample given the mass in the sample and the time in the beam,
-or to perform scattering calculations for the neutrons which are
-not absorbed by the sample.
+of the sample given the mass in the sample and the time in the beam,
+and to perform absorption and scattering calculations for samples on
+slow neutron beamlines (energy below 325 meV, wavelength above 0.05 nm).
 </p>
 <ol>
 <li>Enter the sample formula in the material panel.</li>
@@ -995,11 +1023,12 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
 <p>Units: n/cm<sup>2</sup>/s</p>
 <p>
     Provide the thermal flux equivalent for the pre-sample beam configuration
-    for the instrument.  This is only need for computing the neutron
-    activation from the experiment, and is not used for computing scattering
-    cross sections. Within the NCNR, you can access a list of
-    <a href="http://www-i.ncnr.nist.gov/beamline_operations/instrument_fluxes.html">instrument fluxes</a>,
-    but this is not available from outside.
+    for the instrument. Because neutron capture cross sections are linear
+    above 0.5 Å for most isotopes, simply scale the flux by λ/1.798 Å, where
+    λ is the average wavelength at the sample weighted by spectral intensity.
+    For non-linear isotopes activation may be underestimated
+    (<sup>176</sup>Lu &lt; 1.8 Å; <sup>151</sup>Eu &lt; 0.8 Å)
+    or overestimated (<sup>33</sup>S &lt; 11 Å; <sup>204</sup>Hg &lt; 20 Å).
 </p>
 <p>
     The neutron activation calculation follows (<a class="cite" href="#ref_Shleien">Shleien 1998</a>).
@@ -1008,16 +1037,31 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
     isotopes is used to determine the total activation.  By default, the
     activation calculator uses values from the IAEA
     handbook (<a class="cite" href="#ref_IAEA">IAEA 1987</a>), and the
-    scattering calculator uses the NIST atomic weights and isotope composition
-    database (<a class="cite" href="#ref_Bolke">Bölke 2005</a>).
+    scattering calculator uses the IUPAC 2021 atomic weights and isotope composition
+    database (<a class="cite" href="#ref_CIAAW">CIAAW 2021</a>).
+</p>
+<p>
+    For very high fluences, e.g., more than 10<sup>16</sup> n/cm2, the activation
+    equations give erroneous results because of the precision limitations.
+    If there is doubt simply do the calculation at a lower flux and
+    proportion the result. This will not work for the cascade reactions,
+    i.e., two neutron additions.
+</p>
+<p>
+    Reaction = b  : This is the beta produced daughter of an activated parent.
+    This is calculated only for the cases where the daughter is long lived
+    relative to the parent. The calculated activity is through the end of
+    exposure only. Contributions from the added decay of the parent after the
+    end of irradiation are left for the user to determine, but are usually
+    negligible for irradiations that are long relative to the parent halflife.
 </p>
 
 <p>Calculation parameters are controlled by URL:</p>
 <dl>
     <dt>isotope abundance</dt>
     <dd>
-    The NIST database can be selected for isotope abundance using:
-    <a href="index.html?abundance=NIST">index.html?abundance=NIST</a>
+    Use the following to select IUPAC 2021 isotopic abundance data rather than the IAEA 1987 data:
+    <a href="index.html?abundance=IUPAC">index.html?abundance=IUPAC</a>
     </dd>
 
     <dt>activation cutoff</dt>
@@ -1042,7 +1086,7 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
   Remember, the X in EXP(X) is limited to |X|&lt;709
 </li><li>
   Simplifications have been made as indicated in the comments column in
-  <a href="https://github.com/pkienzle/periodictable/blob/master/periodictable/activation.dat">data table</a>
+  <a href="https://github.com/python-periodictable/periodictable/blob/master/periodictable/activation.dat">data table</a>
 </li><li>
   Typically, for a decay chain where the daughter is also produced (isomers)
   the s of the parent has been added to that of the daughter when the
@@ -1094,7 +1138,7 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
     indicates radioactive daughter of this nuclide in secular equilibrium
     after several daughter t1/2's.
   </dd> <dt>t</dt> <dd>
-    indicates transient equil via beta decay. Accumulation of that nuclide
+    indicates transient equilibrium via beta decay. Accumulation of that nuclide
     during irradiation is separately calculated.
   </dd> </dl>
 </li></ul>
@@ -1265,10 +1309,11 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
     </p><p>
     For heavier isotopes (Cd, Hf, rare earths) and/or shorter wavelengths
     (below 1&nbsp;&Aring;) there are neutron <a href="resonance.html">resonances</a>
-    in the thermal range. For rare-earth elements the energy-dependent coherent
-    sld is calculated following scattering length values tabulated
-    in <a class="cite" href="#ref_Lynn1992">Lynn and Seeger 1992</a>. Incoherent
-    scattering will be understimated for these elements. 
+    in the thermal range. For common rare-earth isotopes the energy-dependent
+    coherent and absorption cross sections tabulated in
+    <a class="cite" href="#ref_Lynn1992">Lynn and Seeger 1992</a> are used.
+    Incoherent scattering will be understimated for these elements.
+    Resonances for <sup>113</sup>Cd and <sup>180</sup>Ta are ignored.
     </p><p>
     There is also a wavelength dependence for single phonon interactions which
     gives rise to significant inelastic scattering for lighter isotopes (H, D)
@@ -1294,11 +1339,12 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
 <div id="help_references" class="help">
     <h3>References</h3>
     <ol>
-    <li id="ref_Bolke">
+    <li id="ref_CIAAW">
+        CIAAW. <em>Isotopic compositions of the elements 2021.</em> Available online
+        at <a href="https://www.ciaaw.org">www.ciaaw.org</a>
         Bölke, et al. (2005).
-        <em>Isotopic Compositions of the Elements, 2001.</em>
-        J. Phys. Chem. Ref. Data, Vol. 34, No. 1, 2005
-        [<a href="http://www.nist.gov/pml/data/comp.cfm">abundance data</a>]
+        [<a href="https://www.ciaaw.org/atomic-weights.htm">atomic weights</a>,
+        <a href="https://www.ciaaw.org/isotopic-abundances.htm">isotopic abundance</a>]
     </li>
     <li id="ref_Deslattes">
         Deslattes, R.D.; Kessler, Jr., E.G.; Indelicato, P.; de Billy, L.; Lindroth, E. and Anton, J. (2003).
@@ -1320,11 +1366,11 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
     </li>
     <!-- TODO: query activation server for periodictable version number -->
     <li id="ref_Kienzle">
-        Kienzle, P. A. (2008-2019).
-        <em>Extensible periodic table (v1.5.2).</em>
-        Computer Software.
+        Kienzle, P. A. (2008).
+        <em>Extensible periodic table</em>
+        [Computer Software].
         <a href="https://periodictable.readthedocs.io">https://periodictable.readthedocs.io</a>.
-        [<a href="https://github.com/pkienzle/periodictable">calculator source</a>,
+        [<a href="https://github.com/python-periodictable/periodictable">calculator source</a>,
         <a href="https://github.com/scattering/activation">web service source</a>]
     </li>
     <li id="ref_Lynn1992">
@@ -1352,7 +1398,7 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
         Shleien, B.; Slaback, L.A. and Birky, B.K. (1998).
         <em>Handbook of health physics and radiological health.</em>
         Williams & Wilkins, Baltimore.
-        [<a href="https://github.com/pkienzle/periodictable/blob/master/periodictable/activation.dat">activation data</a>]
+        [<a href="https://github.com/python-periodictable/periodictable/blob/master/periodictable/activation.dat">activation data</a>]
     </li>
     </ol>
 </div>
@@ -1360,28 +1406,41 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
 <div id="help_history" class="help">
     <h3>History</h3>
     <dl class="inline">
-    <dt>2022-05-18</dt><dd>Fix decay time calculation for long-lived isotopes and activation calculation for Eu.
+    <dt>???</dt><dd>Fix decay time calculation for long-lived isotopes and activation calculation for Eu.
         <br />Use standard year as 365 days when reporting activation times.
         <br />Improve style sheets for mobile and print.
         <br />Remove possible cross-site scripting attack vector.
+  <br /> TODO: check if these are still new changes
     </dd>
-    <dt>2021-04-21</dt><dd>Support energy-dependent rare earth elements.
+    <dt>2024-12-03 v2.0.0</dt><dd>Update mass and abundance tables, and physical constant values
+        <br />neutron cross section updates for H, He, C, O, Zn, Kr, Sn, Xe, Sm, Eu, Ir, Pb, Bi
+        <br />X-ray cross section updates for Pt, Cr, Nb, Y, Er
+        <br />208Pb activation scaled by 0.001 (value was reported in mbarns but added as barns)
+    </dd>
+    <dt>2024-03-22 v1.7.0</dt><dd>Mixture formulas allow wt% and vol%.
+        <br />Formulas allow unicode subscripts such as H₂O.
+        <br />FASTA sequences (aa: rna: dna:) allowed as mixture components.
+        <br />FASTA calculations updated.
+        <br />Use correct halflife for Tm-171, Ho-163 and W-188 activation products.
+        <br />Improve numerical precision of activation calculations.
+    </dd>
+    <dt>2021-04-21 v1.6.0</dt><dd>Support energy-dependent rare earth elements.
         <br />Use complex scattering length b<sub>c</sub> when computing
               σ<sub>c</sub> = 4π&thinsp;|b<sub>c</sub>|<sup>2</sup>/100 and
               σ<sub>i</sub> = σ<sub>s</sub> - σ<sub>c</sub>.
     </dd>
-    <dt>2020-10-29</dt><dd>Change field labels from 'time on/off beam' to 'exposure/decay duration'.</dd>
+    <dt>2020-10-29 v1.5.3</dt><dd>Change field labels from 'time on/off beam' to 'exposure/decay duration'.</dd>
     <dt>2020-01-22</dt><dd>Restore support for Internet Explorer 10 and 11.</dd>
     <dt>2019-12-02</dt><dd>Fix cutoff=0 handling in URL.</dd>
-    <dt>2019-11-14</dt><dd>Correct units on activity table: nCi becomes uCi.
+    <dt>2019-11-14 v1.5.2</dt><dd>Correct units on activity table: nCi becomes uCi.
         <br />Elemental carbon density changed to 2.2 to match CXRO, CRC and RSC.
     </dd>
     <dt>2019-11-04</dt><dd>Update neutron refs with links to ILL data book and Table for Crystallography.</dd>
     <dt>2019-09-16</dt><dd>Improve help system: can now scroll between sections.</dd>
-    <dt>2019-09-11</dt><dd>Include notes on activation calculation.</dd>
+    <dt>2019-09-11 v1.5.1</dt><dd>Include notes on activation calculation.</dd>
     <dt>2019-08-27</dt><dd>Change default cutoff to 0.5 nCi.</dd>
     <dt>2018-01-12</dt><dd>Make activation table sortable.</dd>
-    <dt>2017-05-11</dt><dd>Improved support for printing tables.
+    <dt>2017-05-11 v1.5.0</dt><dd>Improved support for printing tables.
         <br />Support for biomolecules with labile hydrogen (FASTA format).
         <br />Mixture by mass and volume, e.g., <code>5 g NaCl // 50 mL H2O@1</code>
         <br />Multi-layer materials, e.g., <code>5 um Si // 3 nm Cr // 8 nm Au</code>
@@ -1389,9 +1448,9 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
     </dd>
     <dt>2016-12-07</dt><dd>Use exponential notation for all activity levels.</dd>
     <dt>2015-10-20</dt><dd>Allow decay time to be calculated from timestamp..</dd>
-    <dt>2014-03-20</dt><dd>Default to isotopic density.</dd>
+    <dt>2014-03-20 v1.4.1</dt><dd>Default to isotopic density.</dd>
     <dt>2013-11-05</dt><dd>Support for X-ray scattering.</dd>
-    <dt>2013-04-17</dt><dd>Initial release.</dd>
+    <dt>2013-04-17 v1.3.8</dt><dd>Initial release.</dd>
     </dl>
 </div>
 
@@ -1406,16 +1465,16 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
 </div>
 
 <hr>
-<div id="footer">
-    <div id="footer-left"><p>
-        <em>Questions?</em><br>
-        Neutron activation: NCNR Health Physics &lt;<a href="mailto:hp@nist.gov">hp@nist.gov</a>&gt;<br>
-        Scattering calculations: Paul Kienzle &lt;<a href="mailto:paul.kienzle@nist.gov">paul.kienzle@nist.gov</a>&gt;
-        </p></div>
-    <!-- <div id="footer-right"><p><?php lastmod(); ?></p></div> -->
-    <div id="footer-right">
-        <p>Last modified <span id="lastmod-timestamp"></span> by website owner: NCNR</p>
-    </div>
+<div class="footer">
+  <div style="float:left;"><p>
+<em>Questions?</em><br>
+Neutron activation: NCNR Health Physics &lt;<a href="mailto:hp@nist.gov">hp@nist.gov</a>&gt;<br>
+Scattering calculations: Paul Kienzle &lt;<a href="mailto:paul.kienzle@nist.gov">paul.kienzle@nist.gov</a>&gt;
+</p></div>
+  <div style="float:right;">
+    <p>Last modified <span id="lastmod-timestamp"></span> by website owner: NCNR
+    <br>Using <a href="https://periodictable.readthedocs.io">periodictable v2.0.0<a></p>
+  </div>
 </div>
 
 </body></html>

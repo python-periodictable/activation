@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # - *- coding: utf- 8 - *-
 
 # Using "except Except" to forward exception traceback to the user, so disable
@@ -24,6 +24,7 @@ except ImportError:
 
 from pytz import timezone, utc
 
+import periodictable
 from periodictable import elements, activation, formula, \
         neutron_scattering, xray_sld, nsf, util, xsf
 
@@ -347,12 +348,15 @@ def cgi_call():
         errors['xray'] = error()
     try:
         abundance_source = form.getfirst('abundance', 'IAEA')
-        if abundance_source == "NIST":
-            abundance = activation.NIST2001_isotopic_abundance
+        if abundance_source == "IUPAC":
+            abundance = activation.table_abundance
+        # CRUFT: periodictable no longer uses NIST 2001 data for abundance
+        elif abundance_source == "NIST":
+            abundance = activation.table_abundance
         elif abundance_source == "IAEA":
             abundance = activation.IAEA1987_isotopic_abundance
         else:
-            raise ValueError("abundance should be NIST or IAEA")
+            raise ValueError("abundance should be IUPAC or IAEA")
     except Exception:
         errors['abundance'] = error()
 
@@ -385,10 +389,18 @@ def cgi_call():
         else:
             mass = 1.
 
-    result = {'success': True}
+    result = {
+        'success': True,
+        'version': periodictable.__version__,
+        }
     result['sample'] = {
         'name': sample,
         'formula': str(chem),
+        # Use latex output with "$_{count}" rather than html "<sub>count</sub>"
+        # because html translates "<" to "&lt;" and then to "&amp;lt". Instead
+        # use sample.formula_latex.replace(/\$_{([^}]*)}\$/g, '<sub>$1</sub>')
+        # to render subscripts in the web interface.
+        'formula_latex': periodictable.formulas.pretty(chem, 'latex'),
         'mass': mass,
         'density': chem.density,
         'thickness': thickness,
@@ -409,7 +421,7 @@ def cgi_call():
             decay_time = sample.decay_time(decay_level)
             total = [0]*len(sample.rest_times)
             rows = []
-            for el, activity_el in activation.sorted_activity(sample.activity.items()):
+            for el, activity_el in sample.activity.items():
                 total = [t+a for t, a in zip(total, activity_el)]
                 rows.append({
                     'isotope': el.isotope, 'reaction': el.reaction,
@@ -427,7 +439,6 @@ def cgi_call():
                 'decay_level': decay_level,
                 'decay_time': decay_time,
             }
-            #print >>sys.stderr,result
         except Exception:
             result['activation'] = {"error": error()}
 
@@ -485,8 +496,9 @@ if __name__ == "__main__":
         response = cgi_call()
     except Exception:
         response = {
-            'success':False,
+            'success': False,
+            'version': periodictable.__version__,
+            'detail': {'query': error()},
             'error': 'unexpected exception',
-            'detail':{'query': error()},
         }
     respond(response)
