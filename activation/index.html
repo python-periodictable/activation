@@ -274,6 +274,8 @@
         return ret;
     }
 
+    // standard year for activation calculations is 365, not 365.2425
+    var HOURS_PER_YEAR = 365*24; // = 365.2425*24;
     ELEMENTS = {"n": 0, "H": 1, "He": 2, "Li": 3, "Be": 4, "B": 5, "C": 6, "N": 7, "O": 8, "F": 9, "Ne": 10, "Na": 11, "Mg": 12, "Al": 13, "Si": 14, "P": 15, "S": 16, "Cl": 17, "Ar": 18, "K": 19, "Ca": 20, "Sc": 21, "Ti": 22, "V": 23, "Cr": 24, "Mn": 25, "Fe": 26, "Co": 27, "Ni": 28, "Cu": 29, "Zn": 30, "Ga": 31, "Ge": 32, "As": 33, "Se": 34, "Br": 35, "Kr": 36, "Rb": 37, "Sr": 38, "Y": 39, "Zr": 40, "Nb": 41, "Mo": 42, "Tc": 43, "Ru": 44, "Rh": 45, "Pd": 46, "Ag": 47, "Cd": 48, "In": 49, "Sn": 50, "Sb": 51, "Te": 52, "I": 53, "Xe": 54, "Cs": 55, "Ba": 56, "La": 57, "Ce": 58, "Pr": 59, "Nd": 60, "Pm": 61, "Sm": 62, "Eu": 63, "Gd": 64, "Tb": 65, "Dy": 66, "Ho": 67, "Er": 68, "Tm": 69, "Yb": 70, "Lu": 71, "Hf": 72, "Ta": 73, "W": 74, "Re": 75, "Os": 76, "Ir": 77, "Pt": 78, "Au": 79, "Hg": 80, "Tl": 81, "Pb": 82, "Bi": 83, "Po": 84, "At": 85, "Rn": 86, "Fr": 87, "Ra": 88, "Ac": 89, "Th": 90, "Pa": 91, "U": 92, "Np": 93, "Pu": 94, "Am": 95, "Cm": 96, "Bk": 97, "Cf": 98, "Es": 99, "Fm": 100, "Md": 101, "No": 102, "Lr": 103, "Rf": 104, "Db": 105, "Sg": 106, "Bh": 107, "Hs": 108, "Mt": 109, "Ds": 110, "Rg": 111, "Cn": 112, "Nh": 113, "Fl": 114, "Mc": 115, "Lv": 116, "Ts": 117, "Og": 118};
     ACTIVE_BUTTON = "activation";
     // Parse environment variables "index.html?cutoff=...&abundance=..."
@@ -304,14 +306,14 @@
         else return v.toExponential(4)+'&thinsp;ng';
     }
     function format_time(v) {
-        if (v >= 365.2425*24) return nice_number(v/365.2425/24)+' yrs';
+        if (v >= HOURS_PER_YEAR) return nice_number(v/HOURS_PER_YEAR)+' yrs';
         else if (v >= 48 || v == 24) return nice_number(v/24)+' days';
         else if (v >= 2 || v == 1) return nice_number(v)+' hrs';
         else if (v >= 2/60. | v == 1/60.) return nice_number(v*60)+' min';
         else return (v*3600).toPrecision(3)+' sec';
     }
     function parse_half_life(s) {
-        var units = {y: 365*24*3600, d: 24*3600, h: 3600, m: 60, s: 1};
+        var units = {y: HOURS_PER_YEAR*3600, d: 24*3600, h: 3600, m: 60, s: 1};
         var a = s.split(" ");
         var value_str = a[0], units_str = a[1];
         return parseFloat(value_str) * units[units_str];
@@ -1200,19 +1202,19 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
     as "+01" for +1 hours in France in winter, when daylight savings time is
     not in effect.
     </p>
-    <h4>Examples</h4>
+    <p />
     <table>
     <tr><th>If you type:</th><th>This is equivalent to:</th></tr>
     <tr><td>2 m</td><td>2 minutes ago</td></tr>
     <tr><td>1</td><td>1 hour ago</td></tr>
     <tr><td>2.5w</td><td>2 and a half weeks ago</td></tr>
     <tr><td>3 y</td><td>3 years ago</td></tr>
-    <tr><td>2015-01-02 21:45:00</td><td>January 2, 2015 at 9:45 PM US/Eastern</td></tr>
+    <tr><td>2015-01-02&nbsp;21:45:00</td><td>January 2, 2015 at 9:45 PM US/Eastern</td></tr>
     <tr><td>2010-03</td><td>March 31, 2010 at 11:59:59 PM US/Eastern</td></tr>
-    <tr><td>2010-7-5 12:23</td><td>July 5, 2010 at 12:23:59 PM US/Eastern</td></tr>
-    <tr><td>2015-01-02 21:45:00Z</td><td>January 2, 2015 at 9:45 PM UTC</td></tr>
-    <tr><td>2015-01-02 21:45:00-0600</td><td>January 2, 2015 at 9:45 PM US/Central</td></tr>
-    <tr><td>2015-08-02 21:45:00-0500</td><td>August 2, 2015 at 9:45 PM US/Central</td></tr>
+    <tr><td>2010-7-5&nbsp;12:23</td><td>July 5, 2010 at 12:23:59 PM US/Eastern</td></tr>
+    <tr><td>2015-01-02&nbsp;21:45:00Z</td><td>January 2, 2015 at 9:45 PM UTC</td></tr>
+    <tr><td>2015-01-02&nbsp;21:45:00-0600</td><td>January 2, 2015 at 9:45 PM US/Central</td></tr>
+    <tr><td>2015-08-02&nbsp;21:45:00-0500</td><td>August 2, 2015 at 9:45 PM US/Central</td></tr>
     <tr><td></td><td></td></tr>
     </table>
 </div>
@@ -1389,6 +1391,9 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
 <div id="help_history" class="help">
     <h3>History</h3>
     <dl class="inline">
+    <dt>2025-02-28 v2.0.0</dt>
+        <dd>Use standard year as 365 rather than 365.2425 days when reporting decay time.
+    </dd>
     <dt>2024-12-03 v2.0.0</dt><dd>Update mass and abundance tables, and physical constant values
         <br />neutron cross section updates for H, He, C, O, Zn, Kr, Sn, Xe, Sm, Eu, Ir, Pb, Bi
         <br />X-ray cross section updates for Pt, Cr, Nb, Y, Er
