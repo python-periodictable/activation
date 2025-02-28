@@ -1,7 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+    <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <!---
+        Setting viewport makes for a worse experience on iPhone SE but a
+        better experience on android chrome. Android is worser than
+        iPhone is better so set it.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Neutron Activation and Scattering Calculator</title>
     <link rel="shortcut icon" href="favicon.ico">
 
@@ -9,6 +15,15 @@
     <script type="text/javascript" src="jquery.tablesorter-2.0.5b.min.js"></script>
 
     <style type="text/css">
+        body { position: absolute; }
+        @media screen and (max-width: 10cm) {
+            body { font-size: 9pt; }
+        }
+        /*body { font-size: 16pt; }*/
+        input, select, textarea, button {
+            font-family: inherit;
+            font-size: inherit;
+        }
         @media print
         {
             body { font-size: 10pt !important; }
@@ -17,22 +32,28 @@
                 /* border: 0.1pt solid lightgray !important; */
                 border: none !important;
             }
-            .no-print { display: none !important; height: 0; }
-            .no-print *{ display: none !important; height: 0; }
-            .print-only { display: block !important; }
-            .print-only *{ display: block !important; }
+            /* Suppress screen-only when printing */
+            .screen-only { display: none !important; height: 0; }
+            .screen-only *{ display: none !important; height: 0; }
         }
-        .print-only { display: none; }
-        .print-only *{ display: none; }
+        @media screen
+        {
+            /* Suppress print-only when displaying on screen */
+            .print-only { display: none; }
+            .print-only *{ display: none; }
+        }
 
         p { margin-bottom: 0; }
-        .footer p { margin-top: 0; }
+        #footer p { margin-top: 0; }
+        #footer { width: 100%; }
+        #footer-left { float: left; }
+        #footer-right { float: right; }
         /* body { font-size: 0.9em; } */
         .disabled { opacity: 0.3; }
         label { font-weight: inherit; }
         .controls input { width: 100%; }
         table { margin: 0; padding: 0; border-spacing: 0; border-color: lightgray; }
-        caption, td, th { padding: 0 0.5em 0 0.5em; }
+        caption, td, th { padding: 0.2ex 0.5em 0.2ex 0.5em; }
         th { vertical-align: baseline; }
         tbody tr:nth-child(2n) th, tbody tr.even th,
         tbody tr:nth-child(2n) td, tbody tr.even td,
@@ -50,13 +71,19 @@
             background-image: url(resonance-theme/desc.gif);
         }
 
+        /* Cleaner time help table when space is limited. */
+        #help_time_off th { text-align: left; }
+        #help_time_off caption, td, th { padding: 0.2ex 0.5em 0.2ex 0.0em; }
+        #help_time_off .timecol { min-width: 9.1em; }
+
         /* output markup */
         .error { color: red; }
         p.disclaimer { color: darkred; font-size:1.2em; }
         .activity_unusual { background-color:wheat; }
         /* .activity_normal { background-color: lightred; } */
 
-        #id_chemical_formula { width: 30em; }
+        /* Make the formula box expand to the available width. */
+        #material-panel table { display: table; width: 100%; }
 
         div.cutoff { display: block; }
         div.nocutoff { display: none; }
@@ -78,18 +105,21 @@
             -ms-grid-column:2; -ms-grid-row:1;
             grid-column:2; grid-row:1;
             overflow:hidden;
+            margin-left:0.5em;
             margin-right:0em;
-            /* min-width:10em; max-width:40em; */
+            min-width:16em; max-width:40em;
             padding-right:0.5em;
             overflow-y:scroll;
             height:35ex; /* will be replaced by activation-frame height in js */
         }
         #results-frame {
             -ms-grid-column:1/3; -ms-grid-row:2;
+            -ms-overflow-style: none; /* hide vertical scrollbar in IE */
             grid-column:1/3; grid-row:2;
             height:auto;
             overflow-y:scroll;
         }
+        #results-frame::-webkit-scrollbar { width: 0 !important }
         div.control-group { margin-left: 0.5em; vertical-align: bottom; }
         /* div.control-group { height: 3ex; width: 15em; } */
         /* .help starts display:none so that size is initially zero. */
@@ -212,8 +242,10 @@
         else if (v >= 1e-9) return (1e9*v).toFixed(3)+'&thinsp;ng';
         else return v.toExponential(4)+'&thinsp;ng';
     }
+    // standard year for activation calculations is 365, not 365.2425
+    var HOURS_PER_YEAR = 365*24; // = 365.2425*24;
     function format_time(v) {
-        if (v >= 365.2425*24) return nice_number(v/365.2425/24)+' yrs';
+        if (v >= HOURS_PER_YEAR) return nice_number(v/HOURS_PER_YEAR)+' yrs';
         else if (v >= 48 || v == 24) return nice_number(v/24)+' days';
         else if (v >= 2 || v == 1) return nice_number(v)+' hrs';
         else if (v >= 2/60. | v == 1/60.) return nice_number(v*60)+' min';
@@ -385,10 +417,10 @@
         var activity_header, activity_button;
         if (cutoff>0) {
             activity_header = 'Activity (&mu;Ci) above ' + cutoff.toExponential(4) + ' &mu;Ci';
-            activity_button = '<button class="activity_button no-print" onClick="show_cutoff(false);event.stopPropagation();">All</button>';
+            activity_button = '<button class="activity_button screen-only" onClick="show_cutoff(false);event.stopPropagation();">All</button>';
         } else if (CUTOFF>0) {
             activity_header = 'Activity (&mu;Ci)';
-            activity_button = '<button class="activity_button no-print" onClick="show_cutoff(true);event.stopPropagation();">&gt;'+CUTOFF.toExponential(4)+'&thinsp;&mu;Ci</button>';
+            activity_button = '<button class="activity_button screen-only" onClick="show_cutoff(true);event.stopPropagation();">&gt;'+CUTOFF.toExponential(4)+'&thinsp;&mu;Ci</button>';
         } else {
             activity_header = 'Activity (&mu;Ci)';
             activity_button = '';
@@ -486,7 +518,34 @@
 
             // Decay time
             if (act.decay_time > 0) {
-                content += '<br>Time to decay below '+act.decay_level.toExponential(4)+' &mu;Ci is '+format_time(act.decay_time)+'.\n';
+                content += '<br>Time to decay below '+act.decay_level.toExponential(4)+' &mu;Ci is '+format_time(act.decay_time);
+                /* TODO: show cool-off date.
+                The implementation below will confuse users since cool-off date is relative
+                to the time off beam rather than the current time. This is okay when the
+                "Decay" field is set for an existing sample, but the common case is to
+                estimate activation for a sample you are planning to put on the beam not
+                one that you have already measured and removed. We could tweak the interface
+                so that we only display the cool-off date when decay time is negative or
+                decay time is a time stamp, or we could just live with the confusion.
+                I'm going to punt on this for now.
+                // Add the "cool" date/time as the current time minus off beam time plus decay time.
+                var decay_delta = act.decay_time - act.rest[4]; // in hours
+                if (decay_delta < 0) {
+                    // Already past, print nothing.
+                } else if (decay_delta < 7*24) {
+                    // Cool within one week: print date and time
+                    var decay_date = new Date(Date.now() + 1000*3600*decay_delta); // js timestamp is in ms
+                    content += ' [date: ' + decay_date.toLocaleString() + ']';
+                } else if (decay_delta < HOURS_PER_YEAR*100) {
+                    // Cool within one century, print date
+                    decay_delta += 26; // Force anything after 6AM into the next day
+                    var decay_date = new Date(Date.now() + 1000*3600*decay_delta); // js timestamp is in ms
+                    content += ' [date: ' + decay_date.toLocaleDateString() + ']';
+                } else {
+                    // More than a century in the future; print nothing.
+                }
+                */
+                content += "\n";
             }
             content += '</p>\n'
 
@@ -589,7 +648,6 @@
             }
         }
 
-
         // End of div
         content += '</div>\n';
 
@@ -598,8 +656,13 @@
         // do in the activation table. Note that there is no way to get back
         // the original order.
         $("table").tablesorter();
+        scroll_to_result();
     }
 
+    function scroll_to_result(){
+        var opt = {behavior: "smooth", block: "nearest"};
+        document.getElementById("results").firstChild.scrollIntoView(opt);
+    }
     // Dynamic help support.  Clicking an input field jumps to the
     // corresponding section of the help.  Input "gork" uses:
     //    <input id="id_gork" ...>
@@ -626,16 +689,70 @@
         parse_url_parameters();
         enable_forms();
         setup_help();
+        var timestamp = (new Date(Date.parse(document.lastModified))).toLocaleDateString();
+        document.getElementById("lastmod-timestamp").innerHTML = timestamp;
     });
 </script>
 
 </head>
 <body>
 
+<div class="screen-only">
 <?php
   include("/var/www/include/navigation.inc");
   include("/var/www/include/utility.inc");
 ?>
+<!-- Snapshot of navigation.inc and utility.inc from 2022-05-18. Move the
+    ENDCOMMENT line above the table to show the banner from the local server.
+<table width="100%" border="0" cellpadding="0" cellspacing="0">
+    <tbody><tr align="center" valign="bottom">
+     <td background="https://www.ncnr.nist.gov/images/ncnr_banner_tile_2.png">
+      <table width="90%" border="0" cellpadding="0" cellspacing="0" height="66">
+       <tbody><tr valign="middle">
+        <td align="left">
+   <a href="#MainContent" tabindex="-1"><img src="https://www.ncnr.nist.gov/Hidden.gif" width="1" height="1" alt="skip to main content" align="left" border="0"></a>
+         <img src="https://www.ncnr.nist.gov/images/ncnr_banner_title_2.gif" alt="NIST Center for Neutron Research" ismap="" border="0" usemap="#ncnrmap">
+         <map name="ncnrmap">
+          <area shape="rect" coords="0,19,355,40" href="http://www.ncnr.nist.gov/" alt="NIST Center for Neutron Research">
+         </map>
+        </td>
+        <td align="right">
+         <a href="http://www.nist.gov/" tabindex="-1">
+          <img src="https://www.ncnr.nist.gov/images/ncnr_banner_nist_name.gif" alt="National Institute of Standards and Technology" border="0">
+         </a>
+        </td>
+       </tr>
+      </tbody></table>
+     </td>
+    </tr>
+   </tbody></table>
+   <table width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tbody><tr align="center">
+     <td bgcolor="#ccccff">
+          <a href="https://nist.gov/ncnr" tabindex="-1">
+          <font face="arial, helvetica, sans-serif" color="#663399" size="3"><b>Home
+          </b></font></a></td>
+     <td bgcolor="#ccccff">
+          <a href="https://www.ncnr.nist.gov/ipeek" tabindex="-1">
+          <font face="arial, helvetica, sans-serif" color="#663399" size="3"><b>Live Data
+          </b></font></a></td>
+     <td bgcolor="#ccccff">
+          <a href="https://nist.gov/ncnr/neutron-instruments" tabindex="-1">
+          <font face="arial, helvetica, sans-serif" color="#663399" size="3"><b>Instruments
+          </b></font></a></td>
+     <td bgcolor="#ccccff">
+          <a href="https://nist.gov/ncnr/chrns" tabindex="-1">
+          <font face="arial, helvetica, sans-serif" color="#663399" size="3"><b>CHRNS
+          </b></font></a></td>
+     <td bgcolor="#ccccff">
+          <a href="https://nist.gov/ncnr/call-proposals" tabindex="-1">
+          <font face="arial, helvetica, sans-serif" color="#663399" size="3"><b>Proposals
+          </b></font></a></td>
+     </tr>
+  </tbody></table>
+ENDCOMMENT -->
+<!-- end snapshot -->
+</div>
 
 <noscript>
 <h3>Enable javascript to run the activation calculator.</h3><hr />
@@ -643,7 +760,7 @@
 
 <div id="content-frame" class="container disabled">
 
-    <div id="activation-frame" class="no-print">
+    <div id="activation-frame" class="screen-only">
 
         <form id="id-activationForm" class="blueForms" method="post">
 
@@ -714,11 +831,11 @@
             <div class="panel" id="scattering-panel">
             <h3><span class="text">Absorption and Scattering</span></h3>
             <table><tbody><tr>
-              <td>
+              <td width="40%">
                <label for="id_density" class="control-label">Density</label>
-              </td><td>
+              </td><td width="40%">
                <label for="id_thickness" class="control-label">Thickness</label>
-              </td>
+              </td><td width="20%"></td>
             </tr><tr>
               <td>
                <div class="controls"><input id="id_density" type="text" class="textinput textInput" name="density" value="" title="Mass density as val or a:val b:val c:val (Å) alpha:val beta:val gamma:val (°)."></div>
@@ -751,7 +868,7 @@
         </form>
 
     </div>
-    <div id="help-frame" class="no-print">
+    <div id="help-frame" class="screen-only">
 <div id="help_initial" class="help">
 <h3>Neutron activation and scattering calculator</h3>
 <p>
@@ -1100,19 +1217,19 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
     as "+01" for +1 hours in France in winter, when daylight savings time is
     not in effect.
     </p>
-    <h4>Examples</h4>
+    <p />
     <table>
-    <tr><th>If you type:</th><th>This is equivalent to:</th></tr>
-    <tr><td>2 m</td><td>2 minutes ago</td></tr>
-    <tr><td>1</td><td>1 hour ago</td></tr>
-    <tr><td>2.5w</td><td>2 and a half weeks ago</td></tr>
-    <tr><td>3 y</td><td>3 years ago</td></tr>
-    <tr><td>2015-01-02 21:45:00</td><td>January 2, 2015 at 9:45 PM US/Eastern</td></tr>
-    <tr><td>2010-03</td><td>March 31, 2010 at 11:59:59 PM US/Eastern</td></tr>
-    <tr><td>2010-7-5 12:23</td><td>July 5, 2010 at 12:23:59 PM US/Eastern</td></tr>
-    <tr><td>2015-01-02 21:45:00Z</td><td>January 2, 2015 at 9:45 PM UTC</td></tr>
-    <tr><td>2015-01-02 21:45:00-0600</td><td>January 2, 2015 at 9:45 PM US/Central</td></tr>
-    <tr><td>2015-08-02 21:45:00-0500</td><td>August 2, 2015 at 9:45 PM US/Central</td></tr>
+    <tr><th class="timecol">If you type:</th><th>This is equivalent to:</th></tr>
+    <tr><td class="timecol">2 m</td><td>2 minutes ago</td></tr>
+    <tr><td class="timecol">1</td><td>1 hour ago</td></tr>
+    <tr><td class="timecol">2.5w</td><td>2 and a half weeks ago</td></tr>
+    <tr><td class="timecol">3 y</td><td>3 years ago</td></tr>
+    <tr><td class="timecol">2015-01-02&nbsp;21:45:00</td><td>January 2, 2015 at 9:45 PM US/Eastern</td></tr>
+    <tr><td class="timecol">2010-03</td><td>March 31, 2010 at 11:59:59 PM US/Eastern</td></tr>
+    <tr><td class="timecol">2010-7-5&nbsp;12:23</td><td>July 5, 2010 at 12:23:59 PM US/Eastern</td></tr>
+    <tr><td class="timecol">2015-01-02&nbsp;21:45:00Z</td><td>January 2, 2015 at 9:45 PM UTC</td></tr>
+    <tr><td class="timecol">2015-01-02&nbsp;21:45:00-0600</td><td>January 2, 2015 at 9:45 PM US/Central</td></tr>
+    <tr><td class="timecol">2015-08-02&nbsp;21:45:00-0500</td><td>August 2, 2015 at 9:45 PM US/Central</td></tr>
     <tr><td></td><td></td></tr>
     </table>
 </div>
@@ -1289,6 +1406,12 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
 <div id="help_history" class="help">
     <h3>History</h3>
     <dl class="inline">
+    <dt>???</dt><dd>Fix decay time calculation for long-lived isotopes and activation calculation for Eu.
+        <br />Use standard year as 365 days when reporting activation times.
+        <br />Improve style sheets for mobile and print.
+        <br />Remove possible cross-site scripting attack vector.
+  <br /> TODO: check if these are still new changes
+    </dd>
     <dt>2024-12-03 v2.0.0</dt><dd>Update mass and abundance tables, and physical constant values
         <br />neutron cross section updates for H, He, C, O, Zn, Kr, Sn, Xe, Sm, Eu, Ir, Pb, Bi
         <br />X-ray cross section updates for Pt, Cr, Nb, Y, Er
@@ -1349,7 +1472,8 @@ Neutron activation: NCNR Health Physics &lt;<a href="mailto:hp@nist.gov">hp@nist
 Scattering calculations: Paul Kienzle &lt;<a href="mailto:paul.kienzle@nist.gov">paul.kienzle@nist.gov</a>&gt;
 </p></div>
   <div style="float:right;">
-    <p><?php lastmod(); ?><br>Using <a href="https://periodictable.readthedocs.io">periodictable v2.0.0<a></p>
+    <p>Last modified <span id="lastmod-timestamp"></span> by website owner: NCNR
+    <br>Using <a href="https://periodictable.readthedocs.io">periodictable v2.0.0<a></p>
   </div>
 </div>
 

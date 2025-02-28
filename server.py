@@ -6,6 +6,10 @@ This is intended for testing.  It has not been assessed for security and is
 not recommended for a public facing server.  The activation calculator
 expects a cgi interface, which should be provided by the web infrastructure
 (apache, nginx, etc.) that you are using on your production server.
+
+Usage: python server.py [host | host:port]
+
+Default is localhost:8008
 """
 
 from __future__ import print_function
@@ -32,8 +36,11 @@ handler = CGIHTTPRequestHandler
 handler.cgi_directories = ["/cgi-bin"]
 
 host, port = "", 8008
-#host = "p640596.campus.nist.gov"
-if not host:
+if len(sys.argv) > 1:
+    host, *rest = sys.argv[1].split(':', 1)
+    if rest:
+        port = int(rest[0])
+elif not host:
     host = "localhost"
 print("serving on http://%s:%d/activation/"%(host, port))
 httpd = server((host, port), handler)
