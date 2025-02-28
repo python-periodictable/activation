@@ -708,7 +708,7 @@
         var section = document.getElementById(section_name);
         var frame = document.getElementById('help-frame');
         if (!!section) {
-            frame.scrollTop = section.offsetTop - frame.offsetTop;
+            frame.scrollTop = section.offsetTop; // - frame.offsetTop;
         }
     }
 
