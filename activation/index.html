@@ -313,7 +313,8 @@
         else return (v*3600).toPrecision(3)+' sec';
     }
     function parse_half_life(s) {
-        var units = {y: HOURS_PER_YEAR*3600, d: 24*3600, h: 3600, m: 60, s: 1};
+        var y = HOURS_PER_YEAR*3600;
+        var units = {Gy: 1e9*y, My: 1e6*y, ky: 100*y, y: y, d: 24*3600, h: 3600, m: 60, s: 1};
         var a = s.split(" ");
         var value_str = a[0], units_str = a[1];
         return parseFloat(value_str) * units[units_str];
@@ -331,7 +332,7 @@
     });
     $.tablesorter.addParser({
         id: 'half-life',
-        is: function (s) { return /^ *[0-9.+-eE]+ *[smhdy] *$/.test(s); },
+        is: function (s) { return /^ *[0-9.+-eE]+ *[kMG]?[smhdy] *$/.test(s); },
         format: function (s) { return parse_half_life(s); },
         type: 'numeric'
     });
@@ -1397,6 +1398,8 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
 <div id="help_history" class="help">
     <h3>History</h3>
     <dl class="inline">
+    <dt>2025-04-23 v2.0.0</dt>
+        <dd>Fix sort by half-life with units of ky, My, Gy.</dd>
     <dt>2025-02-28 v2.0.0</dt>
         <dd>Use standard year as 365 rather than 365.2425 days when reporting decay time.
     </dd>
