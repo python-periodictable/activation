@@ -13,6 +13,7 @@ cp activation/webworker.js $TARGET_DIR/
 cp activation/favicon.ico $TARGET_DIR/
 cp activation/periodictable_wheel_name.txt $TARGET_DIR/
 cp cgi-bin/nact.py $TARGET_DIR/
+cp activation/resonance.html $TARGET_DIR/
 cp -r activation/pyodide $TARGET_DIR/pyodide
 cp -r activation/css $TARGET_DIR/
 
