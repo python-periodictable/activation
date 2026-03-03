@@ -156,7 +156,7 @@ def scattering_table_html(path: Path|str|None=None, table: PeriodicTable|None=No
 </table>
 <p>This table has been compiled from various sources for the user's convenience and does not represent a critical evaluation by the NIST Center for Neutron Research.
 See <a href="https://github.com/python-periodictable/periodictable/blob/master/periodictable/nsf.py">python-periodictable</a> on github for a list of citations.</p>
-<p>Natural abundance is from IUPAC Commission on Isotopic Abundances and Atomic Weights (<a href="ciaaw.org">CIAAW</a>)</p>
+<p>Natural abundance is from IUPAC Commission on Isotopic Abundances and Atomic Weights (<a href="https://ciaaw.org">CIAAW</a>)</p>
 </body>
 </html>
 """
