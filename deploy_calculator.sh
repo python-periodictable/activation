@@ -20,8 +20,9 @@ cp -r activation/css/. $TARGET_DIR/css
 # generate the HTML table and write it to the target folder
 python3 util/scattering_table_html.py $TARGET_DIR
 
-# Get the version of periodictable from the wheel file name and write it to a text file for use in the workflow
-PERIODICTABLE_VERSION=$(python3 -c "import periodictable; print(periodictable.__version__)")
+# Extract version from wheel filename in periodictable_wheel_name.txt
+WHEEL_NAME=$(cat activation/periodictable_wheel_name.txt)
+PERIODICTABLE_VERSION=$(echo "$WHEEL_NAME" | sed -n 's/.*periodictable-\([^-]*\)-.*/\1/p')
 
 # Write replacements in template
 API_SUB="s@{{ api_script }}@api_webworker.js@g"
