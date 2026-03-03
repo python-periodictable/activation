@@ -18,7 +18,7 @@ cp -r activation/pyodide/. $TARGET_DIR/pyodide
 cp -r activation/css/. $TARGET_DIR/css
 
 # generate the HTML table and write it to the target folder
-pip3 install ./activation/pyodide/periodictable-*.whl
+pip3 install ./activation/pyodide/periodictable-*.whl uncertainties
 python3 util/scattering_table_html.py $TARGET_DIR
 
 # Extract version from wheel filename in periodictable_wheel_name.txt
