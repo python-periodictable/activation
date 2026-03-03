@@ -1,0 +1,30 @@
+.loader .spinner {
+    border: 4px solid #f3f3f3; /* Light grey background */
+    border-top: 4px solid #3498db; /* Blue "spinning" part */
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+}
+
+.loader.finished {
+  display: none;
+}
+
+.loader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 auto;
+    width: fit-content;
+    padding: 1em;
+}
+
+.loader.not-started {
+    display: none;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

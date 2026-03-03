@@ -1,0 +1,186 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+@media print
+{
+    html, body { font-size: 10pt !important; height: unset; }
+    table, caption, th, td {
+        font-size: 10pt !important;
+        /* border: 0.1pt solid lightgray !important; */
+        border: none !important;
+    }
+    .no-print { display: none !important; height: 0; }
+    .no-print *{ display: none !important; height: 0; }
+    .print-only { display: block !important; }
+    .print-only *{ display: block !important; }
+}
+.print-only { display: none; }
+.print-only *{ display: none; }
+
+p { margin-bottom: 0; }
+.footer p { margin-top: 0; }
+
+/* body { font-size: 0.9em; } */
+.disabled { opacity: 0.3; }
+label { font-weight: inherit; }
+.controls input { width: 100%; }
+table { margin: 0; padding: 0; border-spacing: 0; border-color: lightgray; }
+caption, td, th { padding: 0 0.5em 0 0.5em; }
+th { vertical-align: baseline; }
+tbody tr:nth-child(2n) th, tbody tr.even th,
+tbody tr:nth-child(2n) td, tbody tr.even td,
+ul li:nth-child(2n), ol li:nth-child(2n) { background: inherit; /* background: none repeat scroll 0 0 #F3F3F9; */ }
+table.tablesorter thead tr .headerSortable {
+    padding-right: 2em; /* space for sort arrows */
+    cursor: pointer;
+}
+table.tablesorter thead tr .headerSortable::after {
+    content: " \25B4\25BE"; /* ▴▾ */
+    opacity: 0.4;
+}
+table.tablesorter thead tr .headerSortable.headerSortUp::after {
+    content: " \25B2"; /* ▲ */
+    opacity: 1;
+}
+table.tablesorter thead tr .headerSortable.headerSortDown::after {
+    content: " \25BC"; /* ▼ */
+    opacity: 1;
+}
+
+/* output markup */
+.error { color: red; }
+p.disclaimer { color: darkred; font-size:1.2em; }
+.activity_unusual { background-color:wheat; }
+/* .activity_normal { background-color: lightred; } */
+
+#id_chemical_formula { width: 30em; }
+
+div.cutoff { display: block; }
+div.nocutoff { display: none; }
+button.activity_button { float: right; }
+
+/* #wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+} */
+
+/* frame layout */
+#content-frame {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+#activation-frame {
+    width:30em;
+}
+
+#help-frame {
+    position: relative;
+    flex: 1;
+    /* min-width:10em; max-width:40em; */
+    overflow-y:scroll;
+}
+
+#help-wrapper {
+    position: absolute;
+    padding-left:1em;
+    padding-right: 1em;
+    margin-right:0em;
+}
+
+#help-wrapper .word-break {
+    word-break: break-all;
+}
+
+#results-frame {
+    overflow: auto;
+    flex: 1;
+    border-top:#005ea2 1px solid;
+    border-bottom:#005ea2 1px solid;
+}
+
+div.control-group { margin-left: 0.5em; vertical-align: bottom; }
+/* div.control-group { height: 3ex; width: 15em; } */
+/* .help starts display:none so that size is initially zero. */
+.help { display:block; }
+/*.help dl { margin-left: 30em; }
+.help ol { margin-left: 30em; }
+.help p { margin-left: 30em; }
+*/
+.help h3 { margin-top: 0.25em; }
+.help dd { margin-left: 1em; }
+.help dt { margin-left: 0em; padding: 0.3em; font-weight: bold; }
+.help ol { list-style-position: inside; padding-left: 0em; }
+.help li { margin-left: 0em; margin-bottom: 1ex; }
+.help div.bold { font-weight: bold; display: inline; }
+.help div.entrytext {
+    display:inline;
+    font-weight:bold;
+    font-style:oblique;
+}
+.help div.example:before { content:"Example: "; }
+
+/* fading horizontal rule
+modified from http://konigi.com/tools/css-techniques-horizontal-rules
+*/
+.help hr {
+    width: 100%;
+    height: 1px;
+    margin: 2.4em 0;
+    border: none;
+    background: #ddd;
+    background-image: -webkit-gradient(
+        linear,
+        left bottom,
+        right bottom,
+        color-stop(0, rgb(255,255,255)),
+        color-stop(0.1, rgb(221,221,221)),
+        color-stop(0.9, rgb(221,221,221)),
+        color-stop(1, rgb(255,255,255))
+    );
+    background-image: -moz-linear-gradient(
+        left center,
+        rgb(255,255,255) 0%,
+        rgb(221,221,221) 10%,
+        rgb(221,221,221) 90%,
+        rgb(255,255,255) 100%
+    );
+}
+
+/* dictionary type: value on same line */
+dl.inline {
+    display: -ms-grid; -ms-grid-template-columns: max-content auto;
+    display: grid; grid-template-columns: max-content auto;
+}
+dl.inline dt {
+    -ms-grid-column-start: 1;
+    grid-column-start: 1;
+    padding: 0.1em;
+}
+dl.inline dd {
+    -ms-grid-column-start: 2;
+    grid-column-start: 2;
+    padding: 0.1em; margin-left: 0.5em;
+}
+
+.panel { border-radius:0.6em; border: 2pt solid gray; margin: 0.5em; padding: 0.5em; }
+.panel h3 { margin-top: -1em; margin-bottom: 0.3em; font-size: 1em; }
+.panel h3 .text { background: white; margin-left: 1em; padding: 0 0.3em 0 0.3em; }
+.panel { position: relative; }
+.panel .btn { position:absolute; right: 1em; top: 0.75em;}
+/* .panel .btn { position:absolute; top:1em; right:1em; } */
+
+/* Keep constant baseline spacing even with superscript/subscript */
+sup, sub {
+    height: 0;
+    line-height: 1;
+    vertical-align: baseline;
+    _vertical-align: bottom;
+    position: relative;
+}
+sup { bottom: 1ex; }
+sub { top: .5ex; }

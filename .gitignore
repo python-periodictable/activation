@@ -43,3 +43,7 @@ endf/MT.DAT
 endf/PLOT.CHR
 endf/PLOT.SYM
 endf/*.out
+
+# pyodide build cruft
+activation/pyodide
+activation/periodictable_wheel_name.txt

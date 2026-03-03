@@ -1,0 +1,42 @@
+name: Deploy static site to GitHub Pages
+
+on:
+  push:
+    branches:
+      - pyodide # Triggers the workflow on pushes to the pyodide branch
+  workflow_dispatch: # Allows manual triggering from the GitHub UI
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout your repository
+        uses: actions/checkout@v4
+      # Add steps to build your static site (e.g., npm run build)
+      - name: Run deployment script
+        run: |
+          export PYODIDE_VERSION=0.29.3
+          export TARGET_DIR=dist
+          ./deploy_calculator.sh
+      - name: Upload artifact
+        # The contents of the 'build' directory will be uploaded as an artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: 'dist/' # Change this to your build output directory (e.g., public, dist)
+
+  deploy:
+    # Add a dependency to the build job
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write # Grants the GITHUB_TOKEN the necessary permissions to deploy to GitHub Pages
+      id-token: write # Required for OIDC authentication
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 # This action handles the deployment

@@ -1,0 +1,56 @@
+@font-face {
+    font-family:"Source Sans Pro Web";
+    font-style:normal;
+    font-weight:400;
+    font-display:fallback;
+    src: url(https://www.nist.gov/libraries/nist-component-library/dist/fonts/source-sans-pro/sourcesanspro-bold-webfont.woff2) format("woff2"),
+            url(https://www.nist.gov/libraries/nist-component-library/dist/fonts/source-sans-pro/sourcesanspro-regular-webfont.woff) format("woff"),
+            url(https://www.nist.gov/libraries/nist-component-library/dist/fonts/source-sans-pro/sourcesanspro-regular-webfont.ttf) format("truetype");
+}
+
+.ncnr-nist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+    background: url(https://www.nist.gov/libraries/nist-component-library/dist/img/pattern/bg_pattern.png) #006dbc;
+    position: relative;
+}
+
+.ncnr-nist-header::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-image: linear-gradient(to right,transparent,#005ea2);
+}
+
+.ncnr-nist-header h2 {
+    margin: 0;
+    font-family: Source Sans Pro Web;
+    font-size: 1.86rem;
+    line-height: 1.1;
+    text-decoration: none;
+    padding-left: 1rem;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.ncnr-nist-header a {
+    text-decoration: none;
+    color: #FFF;
+    z-index: 2;
+    position: relative;
+}
+
+.ncnr-nist-header img {
+    position: relative;
+    padding-right: 2rem;
+    max-width: 100px;
+    height: auto;
+    z-index: 2;
+}
