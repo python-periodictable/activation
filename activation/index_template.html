@@ -201,7 +201,7 @@ Isotopes can be mixed within a formula, such as
 Use <div class="entrytext">H[1]</div> in formula for labile hydrogen.
 These will be substituded with H and D in proportion with the D<sub>2</sub>O
 fraction when computing the contrast match point of the sample.
-<div class="example"><div class="entrytext">O[18]</div> represents the <sup>18</sup>O</div>
+<div class="example"><div class="entrytext">O[18]</div> represents the isotope <sup>18</sup>O</div>
 <div class="example"><div class="entrytext">C3H4H[1]NO@1.29n</div> represents alanine with one labile hydrogen.
 </dd>
 
@@ -235,19 +235,19 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
 
 <dt>mass fractions</dt>
 <dd>Formulas can be mixed by mass, with each part starting with a percentage
-    followed by formula followed by "//".  The first part must use "%wt" to
+    followed by formula followed by "//".  The first part must use "wt%" to
     indicate that it is a mass fraction.  The final part is the base, and it
     does not need a percentage since it makes up the rest of the material.
-    <div class="example"><div class="entrytext">50%wt Co // Ti</div>
+    <div class="example"><div class="entrytext">50 wt% Co // Ti</div>
     is more descriptive than Co<sub>0.552</sub>Ti<sub>0.448</sub></div>
-    <div class="example"><div class="entrytext">33%wt Co // 33% Fe // Ti</div>
+    <div class="example"><div class="entrytext">33 wt% Co // 33% Fe // Ti</div>
     builds a 1:1:1 mixture by mass of cobalt-iron-titanium</div>
 </dd>
 
 <dt>volume fractions</dt>
-<dd>Volume fractions are like mass fractions, but they use "%vol" instead.
+<dd>Volume fractions are like mass fractions, but they use "vol%" instead.
     Each component of the volume fraction must specify the density.
-    <div class="example"><div class="entrytext">20%vol (10%wt NaCl@2.16 // H2O@1) // D2O@1n</div>
+    <div class="example"><div class="entrytext">20 vol% (10 wt% NaCl@2.16 // H2O@1) // D2O@1n</div>
         is a 10% saline solution by weight mixed 20:80 by volume with
         D<sub>2</sub>O, which is the same as
         <div class="entrytext">NaCl(H2O)29.1966(D2O)122.794@1.10i</div>
@@ -266,7 +266,7 @@ all give the density of D<sub>2</sub>O as 1.11 g/cm<sup>3</sup></div>
     </div>
     <div class="example"><div class="entrytext">5g NaCl@2.16 // 50mL H2O@1</div>
         computes the density as 1.05 g/cm<sup>3</sup>.  Not useful in this
-        case since 9%wt brine has a density of 1.0633 at ambient temperature.
+        case since 9 wt% brine has a density of 1.0633 at ambient temperature.
     </div>
     <div class="example"><div class="entrytext">50 mL (45 mL H2O@1 // 5 g NaCl)@1.0707 // 20 mL D2O@1n</div>
         uses the appropriate density for a 10%wt brine in the mixture.
