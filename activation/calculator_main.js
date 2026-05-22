@@ -107,6 +107,7 @@ function enable_forms() {
     $('#id_chemical_formula').removeAttr("disabled");
     $('#id_submit_scat').removeAttr("disabled");
     $('#id_submit_act').removeAttr("disabled");
+    $('#id_submit_samp').removeAttr("disabled");
     $('a').each(function(){ this.tabIndex = -1; });
     $('.help').each(function(){ $(this).append("<hr>"); });
     $('input[type=text]').keydown(function(e) {
@@ -128,11 +129,12 @@ function enable_forms() {
     $("#id-activationForm").submit(function(event) {event.preventDefault();});
     $('#id_submit_scat').click(function() { submit_query('scattering'); });
     $('#id_submit_act').click(function() { submit_query('activation'); });
+    $('#id_submit_samp').click(function() { submit_query('sample'); });
 }
 
 function submit_query(target){
     ACTIVE_BUTTON = target;
-    
+
     // activate the loader spinner:
     document.querySelector("div.loader").classList.remove("not-started");
 
@@ -207,7 +209,7 @@ function activation_table(act, cutoff) {
     content += '  <tr class="header {sorter:false}"><th colspan="4" /><th colspan="5" class="{sorter:false}">'+activity_header+activity_button+'</th></tr>\n';
     content += '  <tr class="header">';
     for (var i in data.headers) {
-        content += '<th class="headerSortable {sorter: \'' + data.sorters[i] + '\')">' + data.headers[i] + '</th>';
+        content += '<th class="headerSortable {sorter: \'' + data.sorters[i] + '\'}">' + data.headers[i] + '</th>';
     }
     content += '</tr>\n </thead>\n <tbody>\n'
     var some_unusual = false;
@@ -245,6 +247,16 @@ function activation_table(act, cutoff) {
     content += ' </tfoot> \n</table>\n';
     return content;
 }
+function mass_fraction_table(massfrac) {
+    var content = '<table border=1 class="tablesorter">\n <thead>';
+    content += '  <tr><th class="headerSortable {sorter: isotope}">element/isotope</th><th class="headerSortable {sorter: float}">mass fraction</th></tr>\n';
+    content += ' </thead>\n';
+    for (var element in massfrac) {
+        content += ' <tr><td>'+element+'</td><td>'+massfrac[element]+'</td></tr>\n';
+    }
+    content += '</table>';
+    return content;
+}
 function show_error(error_html) {
     var content = '<div class="result error"><hr />\n';
     content += error_html;
@@ -270,6 +282,12 @@ function process_response(ldata) {
     var scat = ldata.scattering;
     var xscat = ldata.xray_scattering;
     var content = '<div class="result"><hr>\n';
+
+    // Only show mass fraction table if no activation or scattering results.
+    if (typeof act == 'undefined' && typeof scat == 'undefined') {
+        content += '<h3>Mass fraction of ' + sample.name + '</h3>';
+        content += mass_fraction_table(sample.mass_fractions);
+    }
 
     if (typeof act == 'undefined') {
         // do nothing if not returned
