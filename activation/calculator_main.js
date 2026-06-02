@@ -240,7 +240,7 @@ function activation_table(act, cutoff) {
     }
     content += '</tr>\n';
     if (some_unusual) {
-        content += ' <tr class="activity_unusual"><td colspan="9">b reaction activity is slightly underestimated; it does not include decay of transients after removal from beam.</td></tr>\n';
+        content += ' <tr class="activity_unusual"><td colspan="9">b reactions are transitory products; activity will increase during parent burn up.</td></tr>\n';
     }
     content += ' </tfoot> \n</table>\n';
     return content;
