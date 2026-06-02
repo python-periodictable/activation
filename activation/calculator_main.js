@@ -294,7 +294,9 @@ function process_response(ldata) {
         }
 
         // Decay time
-        if (act.decay_time > 0) {
+        if (act.decay_time === null) {
+            content += '<br><span style="color:red">Failed to calculate decay time. Please report sample and activation parameters to paul.kienzle@nist.gov.</span>\n';
+        } else if (act.decay_time > 0) {
             content += '<br>Time to decay below '+act.decay_level.toExponential(4)+' &mu;Ci is '+format_time(act.decay_time)+'.\n';
         }
         content += '</p>\n'
