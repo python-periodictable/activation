@@ -407,7 +407,16 @@ def api_call(form: dict):
                                         exposure=exposure,
                                         rest_times=rest_times,
                                         abundance=abundance)
-            decay_time = sample.decay_time(decay_level)
+            try:
+                decay_time = sample.decay_time(decay_level)
+            except Exception:
+                # TODO: could return the error message rather than None
+                # TODO: what does pyodide do with logging and print statements?
+                # decay time calculator should always succeed, but the
+                # new algorithm might be unstable. Let the routine
+                # raise an error but don't shove it in the face of the
+                # user quite yet.
+                decay_time = None
             total = [0]*len(sample.rest_times)
             rows = []
             for el, activity_el in sample.activity.items():

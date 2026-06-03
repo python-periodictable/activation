@@ -240,7 +240,7 @@ function activation_table(act, cutoff) {
     }
     content += '</tr>\n';
     if (some_unusual) {
-        content += ' <tr class="activity_unusual"><td colspan="9">b reaction activity is slightly underestimated; it does not include decay of transients after removal from beam.</td></tr>\n';
+        content += ' <tr class="activity_unusual"><td colspan="9">b reactions are transitory products; activity will increase during parent burn up.</td></tr>\n';
     }
     content += ' </tfoot> \n</table>\n';
     return content;
@@ -294,7 +294,9 @@ function process_response(ldata) {
         }
 
         // Decay time
-        if (act.decay_time > 0) {
+        if (act.decay_time === null) {
+            content += '<br><span style="color:red">Failed to calculate decay time. Please report sample and activation parameters to paul.kienzle@nist.gov.</span>\n';
+        } else if (act.decay_time > 0) {
             content += '<br>Time to decay below '+act.decay_level.toExponential(4)+' &mu;Ci is '+format_time(act.decay_time)+'.\n';
         }
         content += '</p>\n'
