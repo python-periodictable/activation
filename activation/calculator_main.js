@@ -40,8 +40,9 @@ function format_time(v) {
     else return (v*3600).toPrecision(3)+' sec';
 }
 function parse_half_life(s) {
+    // Convert half-life into seconds for sorting
     var y = HOURS_PER_YEAR*3600;
-    var units = {Gy: 1e9*y, My: 1e6*y, ky: 100*y, y: y, d: 24*3600, h: 3600, m: 60, s: 1};
+    var units = {Ty: 1e12*y, Gy: 1e9*y, My: 1e6*y, ky: 100*y, y: y, d: 24*3600, h: 3600, m: 60, s: 1, ms: 1e-3};
     var a = s.split(" ");
     var value_str = a[0], units_str = a[1];
     return parseFloat(value_str) * units[units_str];
@@ -53,13 +54,13 @@ function parse_isotope(s) {
 }
 $.tablesorter.addParser({
     id: 'isotope',
-    is: function (s) { return /^ *[A-Z][a-z]?-[0-9]+[sm+]* *$/.test(s); },
+    is: function (s) { return /^ *[A-Z][a-z]?-[0-9]+[tsm+*]* *$/.test(s); },
     format: function (s) { return parse_isotope(s); },
     type: 'numeric'
 });
 $.tablesorter.addParser({
     id: 'half-life',
-    is: function (s) { return /^ *[0-9.+-eE]+ *[kMG]?[smhdy] *$/.test(s); },
+    is: function (s) { return /^ *[0-9.+-eE]+ *(m?s|m|h|d|[kMGT]?y) *$/.test(s); },
     format: function (s) { return parse_half_life(s); },
     type: 'numeric'
 });
