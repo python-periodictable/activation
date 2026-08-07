@@ -252,8 +252,8 @@ def api_call(form: dict):
     # Parse inputs
     errors = {}
     calculate = form.get('calculate', 'all')
-    if calculate not in ('scattering', 'activation', 'all'):
-        errors['calculate'] = "calculate should be one of 'scattering', 'activation' or 'all'"
+    if calculate not in ('scattering', 'activation', 'sample', 'all'):
+        errors['calculate'] = "calculate should be one of 'scattering', 'activation', 'sample', or 'all'."
     try:
         sample = form.get('sample')
         chem = formula(sample)
@@ -394,6 +394,7 @@ def api_call(form: dict):
         'density': chem.density,
         'thickness': thickness,
         'natural_density': chem.natural_density,
+        'mass_fractions': {str(k): v for k, v in chem.mass_fraction.items()},
         }
 
     # Run calculations
@@ -495,7 +496,7 @@ def fieldstorage_to_dict(form: 'cgi.FieldStorage') -> dict:
     result = {}
     if form is None:
         return result
-        
+
     for key in form.keys():
         values = form.getlist(key)
         if len(values) == 1:
@@ -504,7 +505,7 @@ def fieldstorage_to_dict(form: 'cgi.FieldStorage') -> dict:
                 result[key] = value.split(",")
             else:
                 result[key] = value
-            
+
     return result
 
 if __name__ == "__main__":
